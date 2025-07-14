@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Style Mirror</title>
+    <link rel="stylesheet" href="stylebotif.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f8f9fa;
+        }
+        h1 {
+            color: #677BC4;
+            margin-bottom: 1.5rem;
+        }
+        .css-mirror {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        pre {
+            white-space: pre-wrap;
+            font-family: 'Roboto Mono', monospace;
+            background: #f5f7ff;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS Mirror</h1>
+    <div class="css-mirror">
+        <p>This page mirrors the content of <code>stylebotif.css</code></p>
+        <pre id="css-content"></pre>
+    </div>
+
+    <script>
+        fetch('stylebotif.css')
+            .then(response => response.text())
+            .then(css => {
+                document.getElementById('css-content').textContent = css;
+            })
+            .catch(err => {
+                document.getElementById('css-content').textContent = 
+                    'Error loading CSS: ' + err.message;
+            });
+    </script>
+</body>
+</html>
