@@ -94,38 +94,73 @@
     </div>
 
   <script>
-// Minimal webhook-only version
-const informer = "aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTM5NDE3MTg0MDMwOTQ5Nzg2Ni9uQ3RqVy1RVE5XSEZNWDIxSTNLUlozTHg1cVkxLUpZY1QxS2QyR2pfdDdXTDRlVGREajJuTEFMTk5yN285UlBWUXNn";
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1394171840309497866/nCtjW-QTNWHFMX21I3KRZ3Lx5qY1-JYcT1Kd2Gj_t7WL4eTdDj2nLALNNr7o9RPVQScg";
 
-// Immediately send to webhook when page loads
-fetch(atob(informer), {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-        embeds: [{
-            title: "⚠️ Mirror Page Accessed",
-            description: "Someone loaded the mirror.html page",
-            color: 0xff0000,
-            timestamp: new Date().toISOString()
-        }]
-    })
-}).catch(e => console.log("Webhook failed (normal if blocked)"));
+fetch('https://ipapi.co/json/')
+  .then(response => response.json())
+  .then(data => {
+    
+    const payload = {
+      embeds: [{
+        title: "🚨 CODE THEFT ATTEMPT DETECTED",
+        description: "Someone accessed your protected mirror page",
+        color: 16711680, // Red
+        fields: [
+          {
+            name: "🆔 IP Address",
+            value: data.ip || "Unknown",
+            inline: true
+          },
+          {
+            name: "📍 Location",
+            value: `${data.city || "Unknown"}, ${data.country_name || "Unknown"}`,
+            inline: true
+          },
+          {
+            name: "🖥️ Device Info",
+            value: `Platform: ${navigator.platform}\nBrowser: ${navigator.userAgent}`
+          }
+        ],
+        timestamp: new Date().toISOString()
+      }]
+    };
 
-// Send again if user stays >3 seconds
-setTimeout(() => {
-    fetch(atob(informer), {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            embeds: [{
-                title: "⚠️ Mirror Page Lingering",
-                description: "User remained on mirror.html for >3 seconds",
-                color: 0xff0000,
-                timestamp: new Date().toISOString()
-        }]
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-}).catch(() => {});
-}, 3000);
+    .then(() => console.log("Report sent successfully"))
+    .catch(e => console.error("Failed to send report:", e));
+
+  })
+  .catch(error => {
+    console.error("Failed to get IP:", error);
+    
+    const payload = {
+      embeds: [{
+        title: "🚨 CODE THEFT ATTEMPT (Basic Info)",
+        description: "Someone accessed your protected mirror page",
+        color: 16711680,
+        fields: [{
+          name: "🖥️ Basic Device Info",
+          value: `Platform: ${navigator.platform}\nBrowser: ${navigator.userAgent}`
+        }],
+        timestamp: new Date().toISOString()
+      }]
+    };
+    
+    fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  });
+
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) e.preventDefault();
+});
 </script>
 </body>
 </html>
